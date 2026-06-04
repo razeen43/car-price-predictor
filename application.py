@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='Templates')
 cors = CORS(app)
 model = pickle.load(open('LinearRegressionModel.pkl', 'rb'))
 car = pd.read_csv('Cleaned Car.csv')
