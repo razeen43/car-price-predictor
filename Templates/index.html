@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Car Price Predictor</title>
+    <meta name="description" content="Predict the selling price of your used car instantly with our AI-powered price estimation tool.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <!-- Animated Background Particles -->
+    <div class="bg-particles">
+        <div class="particle" style="--x: 10%; --y: 20%; --duration: 20s; --delay: 0s; --size: 4px;"></div>
+        <div class="particle" style="--x: 80%; --y: 10%; --duration: 25s; --delay: 2s; --size: 6px;"></div>
+        <div class="particle" style="--x: 50%; --y: 80%; --duration: 18s; --delay: 4s; --size: 3px;"></div>
+        <div class="particle" style="--x: 30%; --y: 60%; --duration: 22s; --delay: 1s; --size: 5px;"></div>
+        <div class="particle" style="--x: 70%; --y: 40%; --duration: 28s; --delay: 3s; --size: 4px;"></div>
+        <div class="particle" style="--x: 90%; --y: 70%; --duration: 15s; --delay: 5s; --size: 7px;"></div>
+        <div class="particle" style="--x: 20%; --y: 90%; --duration: 20s; --delay: 2s; --size: 3px;"></div>
+        <div class="particle" style="--x: 60%; --y: 30%; --duration: 24s; --delay: 6s; --size: 5px;"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-brand">
+            <div class="brand-icon">
+                <i class="fas fa-car-side"></i>
+            </div>
+            <span class="brand-text">AI Car <span class="accent">Price</span> Predictor</span>
+        </div>
+        <div class="nav-links">
+            <a href="#hero" class="nav-link active">Home</a>
+            <a href="#predictor" class="nav-link">Predict</a>
+            <a href="#how-it-works" class="nav-link">How It Works</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-robot"></i>
+                <span>AI Powered</span>
+            </div>
+            <h1 class="hero-title">
+                Know Your Car's
+                <span class="gradient-text">True Value</span>
+            </h1>
+            <p class="hero-subtitle">
+                Our advanced machine learning model analyzes thousands of data points
+                to predict the most accurate resale price for your car — instantly.
+            </p>
+            <a href="#predictor" class="hero-cta">
+                <span>Get Your Estimate</span>
+                <i class="fas fa-arrow-down"></i>
+            </a>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number" data-count="815">0</span>
+                    <span class="stat-label">Cars Analyzed</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="12">0</span>
+                    <span class="stat-label">Car Brands</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="95">0</span>
+                    <span class="stat-label">% Accuracy</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="glow-ring"></div>
+            <div class="car-icon-container">
+                <i class="fas fa-car-side car-icon-hero"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Predictor Section -->
+    <section class="predictor-section" id="predictor">
+        <div class="section-header">
+            <h2 class="section-title">Price <span class="gradient-text">Predictor</span></h2>
+            <p class="section-desc">Fill in the details below and let our AI do the rest</p>
+        </div>
+
+        <div class="predictor-container">
+            <div class="form-card">
+                <div class="card-glow"></div>
+                <form id="predictForm" method="post">
+
+                    <!-- Company -->
+                    <div class="form-group" id="form-group-company">
+                        <label for="company">
+                            <i class="fas fa-building"></i>
+                            <span>Company</span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="company" name="company" required
+                                    onchange="loadCarModels()">
+                                {% for company in companies %}
+                                <option value="{{ company }}">{{ company }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+
+                    <!-- Car Model -->
+                    <div class="form-group" id="form-group-model">
+                        <label for="car_models">
+                            <i class="fas fa-car"></i>
+                            <span>Model</span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="car_models" name="car_models" required>
+                                <option value="">Select Company First</option>
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+
+                    <!-- Year -->
+                    <div class="form-group" id="form-group-year">
+                        <label for="year">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Year of Purchase</span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="year" name="year" required>
+                                {% for year in years %}
+                                <option value="{{ year }}">{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+
+                    <!-- Fuel Type -->
+                    <div class="form-group" id="form-group-fuel">
+                        <label for="fuel_type">
+                            <i class="fas fa-gas-pump"></i>
+                            <span>Fuel Type</span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="fuel_type" name="fuel_type" required>
+                                {% for fuel in fuel_types %}
+                                <option value="{{ fuel }}">{{ fuel }}</option>
+                                {% endfor %}
+                            </select>
+                            <i class="fas fa-chevron-down select-arrow"></i>
+                        </div>
+                    </div>
+
+                    <!-- Kilometers Driven -->
+                    <div class="form-group" id="form-group-kms">
+                        <label for="kilo_driven">
+                            <i class="fas fa-road"></i>
+                            <span>Kilometers Driven</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="kilo_driven" name="kilo_driven"
+                                   placeholder="e.g. 45000" required min="0">
+                            <span class="input-unit">km</span>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="button" class="predict-btn" id="predictBtn" onclick="sendData()">
+                        <span class="btn-text">
+                            <i class="fas fa-magic"></i>
+                            Predict Price
+                        </span>
+                        <span class="btn-loader" style="display:none;">
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                            Analyzing...
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Result Card -->
+                <div class="result-card" id="resultCard" style="display: none;">
+                    <div class="result-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="result-label">Estimated Price</div>
+                    <div class="result-price" id="prediction"></div>
+                    <div class="result-note">*Based on market data &amp; ML analysis</div>
+                </div>
+
+                <!-- Chart Card -->
+                <div class="chart-card" id="chartCard" style="display: none;">
+                    <div class="chart-card-header">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Valuation Trend by Year</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Info Cards -->
+            <div class="info-cards">
+                <div class="info-card" id="info-card-1">
+                    <div class="info-icon"><i class="fas fa-brain"></i></div>
+                    <h3>ML Powered</h3>
+                    <p>Uses Linear Regression trained on real market data for precise predictions</p>
+                </div>
+                <div class="info-card" id="info-card-2">
+                    <div class="info-icon"><i class="fas fa-bolt"></i></div>
+                    <h3>Instant Results</h3>
+                    <p>Get your car's estimated value in milliseconds — no waiting required</p>
+                </div>
+                <div class="info-card" id="info-card-3">
+                    <div class="info-icon"><i class="fas fa-shield-alt"></i></div>
+                    <h3>Data Driven</h3>
+                    <p>Analyzed 815+ real car listings to ensure reliable valuations</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-section" id="how-it-works">
+        <div class="section-header">
+            <h2 class="section-title">How It <span class="gradient-text">Works</span></h2>
+            <p class="section-desc">Three simple steps to know your car's value</p>
+        </div>
+        <div class="steps-container">
+            <div class="step" id="step-1">
+                <div class="step-number">01</div>
+                <div class="step-icon"><i class="fas fa-edit"></i></div>
+                <h3>Enter Details</h3>
+                <p>Select your car's company, model, year, fuel type and kilometers driven</p>
+            </div>
+            <div class="step-connector"><i class="fas fa-arrow-right"></i></div>
+            <div class="step" id="step-2">
+                <div class="step-number">02</div>
+                <div class="step-icon"><i class="fas fa-cogs"></i></div>
+                <h3>AI Analysis</h3>
+                <p>Our trained ML model processes multiple features to calculate the estimate</p>
+            </div>
+            <div class="step-connector"><i class="fas fa-arrow-right"></i></div>
+            <div class="step" id="step-3">
+                <div class="step-number">03</div>
+                <div class="step-icon"><i class="fas fa-chart-line"></i></div>
+                <h3>Get Price</h3>
+                <p>Receive an instant, data-backed price prediction for your car</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <i class="fas fa-car-side"></i>
+                <span>AI Car Price Predictor</span>
+            </div>
+
+        </div>
+    </footer>
+
+    <script>
+        /* ==================== Smooth Scrolling ==================== */
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        /* ==================== Navbar Scroll Effect ==================== */
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        /* ==================== Counter Animation ==================== */
+        function animateCounters() {
+            document.querySelectorAll('.stat-number').forEach(counter => {
+                const target = parseInt(counter.dataset.count);
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+
+                const update = () => {
+                    current += step;
+                    if (current < target) {
+                        counter.textContent = Math.floor(current);
+                        requestAnimationFrame(update);
+                    } else {
+                        counter.textContent = target;
+                    }
+                };
+                update();
+            });
+        }
+
+        /* ==================== Intersection Observer for Animations ==================== */
+        const observerOptions = { threshold: 0.2 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                    if (entry.target.classList.contains('hero')) {
+                        animateCounters();
+                    }
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.hero, .form-card, .info-card, .step, .section-header').forEach(el => {
+            observer.observe(el);
+        });
+
+        /* ==================== Load Car Models ==================== */
+        function loadCarModels() {
+            const company = document.getElementById('company').value;
+            const carModelSelect = document.getElementById('car_models');
+
+            carModelSelect.innerHTML = '<option value="">Loading...</option>';
+
+            if (company === 'Select Company') {
+                carModelSelect.innerHTML = '<option value="">Select Company First</option>';
+                return;
+            }
+
+            fetch('/get_models', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ company: company })
+            })
+            .then(res => res.json())
+            .then(models => {
+                carModelSelect.innerHTML = '';
+                models.forEach(model => {
+                    const opt = document.createElement('option');
+                    opt.value = model;
+                    opt.textContent = model;
+                    carModelSelect.appendChild(opt);
+                });
+            })
+            .catch(() => {
+                carModelSelect.innerHTML = '<option value="">Error loading models</option>';
+            });
+        }
+
+        /* ==================== Send Prediction Request ==================== */
+        function sendData() {
+            const company = document.getElementById('company').value;
+            if (company === 'Select Company') {
+                shakeElement(document.getElementById('form-group-company'));
+                return;
+            }
+
+            const kms = document.getElementById('kilo_driven').value;
+            if (!kms) {
+                shakeElement(document.getElementById('form-group-kms'));
+                return;
+            }
+
+            const btn = document.getElementById('predictBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const btnLoader = btn.querySelector('.btn-loader');
+            const resultCard = document.getElementById('resultCard');
+            const chartCard = document.getElementById('chartCard');
+
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'inline-flex';
+            btn.disabled = true;
+            resultCard.style.display = 'none';
+            chartCard.style.display = 'none';
+
+            const form = document.getElementById('predictForm');
+            const fd = new FormData(form);
+            const selectedYear = document.getElementById('year').value;
+
+            fetch('/predict', {
+                method: 'POST',
+                body: fd
+            })
+            .then(res => res.json())
+            .then(data => {
+                const price = parseFloat(data.price);
+                let display;
+                if (price >= 100000) {
+                    display = '₹ ' + (price / 100000).toFixed(2) + ' Lakh';
+                } else {
+                    display = '₹ ' + price.toLocaleString('en-IN');
+                }
+                document.getElementById('prediction').textContent = display;
+                resultCard.style.display = 'block';
+                resultCard.classList.add('result-animate');
+
+                setTimeout(() => resultCard.classList.remove('result-animate'), 600);
+
+                if (data.trend && data.trend.length > 0) {
+                    updateTrendChart(data.trend, selectedYear);
+                }
+            })
+            .catch((err) => {
+                console.error("Prediction error:", err);
+                document.getElementById('prediction').textContent = 'Error — please try again';
+                resultCard.style.display = 'block';
+                chartCard.style.display = 'none';
+            })
+            .finally(() => {
+                btnText.style.display = 'inline-flex';
+                btnLoader.style.display = 'none';
+                btn.disabled = false;
+            });
+        }
+
+        /* ==================== Trend Chart Rendering ==================== */
+        let trendChartInstance = null;
+
+        function updateTrendChart(trendData, selectedYear) {
+            const chartCard = document.getElementById('chartCard');
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            chartCard.style.display = 'block';
+            chartCard.classList.add('chart-animate');
+            setTimeout(() => chartCard.classList.remove('chart-animate'), 600);
+
+            const labels = trendData.map(item => item.year);
+            const prices = trendData.map(item => item.price);
+
+            const pointColors = trendData.map(item => item.year === parseInt(selectedYear) ? '#e8b84a' : 'rgba(212, 153, 62, 0.3)');
+            const pointSizes = trendData.map(item => item.year === parseInt(selectedYear) ? 8 : 4);
+            const pointBorderColors = trendData.map(item => item.year === parseInt(selectedYear) ? '#ffffff' : 'rgba(212, 153, 62, 0.3)');
+            const pointHoverSizes = trendData.map(item => item.year === parseInt(selectedYear) ? 10 : 6);
+
+            if (trendChartInstance) {
+                trendChartInstance.destroy();
+            }
+
+            // Create gradient fill for chart area
+            const gradientFill = ctx.createLinearGradient(0, 0, 0, 200);
+            gradientFill.addColorStop(0, 'rgba(212, 153, 62, 0.15)');
+            gradientFill.addColorStop(1, 'rgba(212, 153, 62, 0.00)');
+
+            trendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Estimated Resale Price',
+                        data: prices,
+                        borderColor: '#d4993e',
+                        borderWidth: 2,
+                        backgroundColor: gradientFill,
+                        fill: true,
+                        tension: 0.35,
+                        pointBackgroundColor: pointColors,
+                        pointBorderColor: pointBorderColors,
+                        pointRadius: pointSizes,
+                        pointHoverRadius: pointHoverSizes,
+                        pointHoverBackgroundColor: '#e8b84a',
+                        pointHoverBorderColor: '#ffffff',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(26, 22, 20, 0.95)',
+                            titleColor: '#ece4da',
+                            bodyColor: '#ece4da',
+                            borderColor: 'rgba(200, 131, 74, 0.3)',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const price = context.parsed.y;
+                                    if (price >= 100000) {
+                                        return '₹ ' + (price / 100000).toFixed(2) + ' Lakh';
+                                    } else {
+                                        return '₹ ' + price.toLocaleString('en-IN');
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(200, 131, 74, 0.05)',
+                                borderColor: 'rgba(200, 131, 74, 0.1)'
+                            },
+                            ticks: {
+                                color: '#a39788',
+                                font: {
+                                    family: 'Inter',
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(200, 131, 74, 0.05)',
+                                borderColor: 'rgba(200, 131, 74, 0.1)'
+                            },
+                            ticks: {
+                                color: '#a39788',
+                                font: {
+                                    family: 'Inter',
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    if (value >= 100000) {
+                                        return '₹' + (value / 100000).toFixed(1) + 'L';
+                                    } else if (value >= 1000) {
+                                        return '₹' + (value / 1000).toFixed(0) + 'k';
+                                    }
+                                    return '₹' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+
+        /* ==================== Shake Animation for Validation ==================== */
+        function shakeElement(el) {
+            el.classList.add('shake');
+            setTimeout(() => el.classList.remove('shake'), 600);
+        }
+
+        /* ==================== Initial Animation Trigger ==================== */
+        window.addEventListener('load', () => {
+            document.body.classList.add('loaded');
+        });
+    </script>
+
+    <!-- AI Chat Assistant Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <!-- Floating Toggle Button -->
+        <button class="chat-toggle-btn" id="chatToggleBtn" onclick="toggleChat()">
+            <i class="fas fa-robot"></i>
+            <span class="chat-badge">AI</span>
+        </button>
+
+        <!-- Chat Window -->
+        <div class="chat-window" id="chatWindow" style="display: none;">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="chat-header-icon"><i class="fas fa-robot"></i></div>
+                    <div>
+                        <div class="chat-header-title">Car AI Assistant</div>
+                        <div class="chat-header-status">Online</div>
+                    </div>
+                </div>
+                <button class="chat-close-btn" onclick="toggleChat()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-message ai">
+                    Hi! I'm your AI Car Assistant. How can I help you today?
+                </div>
+            </div>
+
+            <!-- Quick Suggestion Chips -->
+            <div class="chat-chips">
+                <button class="chat-chip" onclick="sendChipQuery('How does the price predictor work?')">How does predictor work?</button>
+                <button class="chat-chip" onclick="sendChipQuery('What factors affect car resale value most?')">Value Factors</button>
+                <button class="chat-chip" onclick="sendChipQuery('Give me tips to sell a used car fast')">Selling Tips</button>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Ask about car valuations, buying tips..." onkeypress="handleChatKeyPress(event)">
+                <button class="chat-send-btn" id="chatSendBtn" onclick="sendChatMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==================== AI Chat Widget JS ==================== */
+        let chatHistory = [];
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            const chatToggleBtn = document.getElementById('chatToggleBtn');
+            
+            if (chatWindow.style.display === 'none' || chatWindow.classList.contains('chat-closed')) {
+                chatWindow.style.display = 'flex';
+                chatWindow.classList.remove('chat-closed');
+                chatWindow.classList.add('chat-opened');
+                chatToggleBtn.classList.add('active');
+                
+                // Focus on input
+                setTimeout(() => {
+                    document.getElementById('chatInput').focus();
+                }, 300);
+            } else {
+                chatWindow.classList.remove('chat-opened');
+                chatWindow.classList.add('chat-closed');
+                chatToggleBtn.classList.remove('active');
+                
+                // Hide after transition
+                setTimeout(() => {
+                    chatWindow.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        function sendChipQuery(queryText) {
+            sendChatMessage(queryText);
+        }
+
+        function appendMessage(sender, text) {
+            const container = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-message ${sender}`;
+            
+            // Format markdown-like bold/list in response
+            msgDiv.innerHTML = formatMessageText(text);
+            
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function formatMessageText(text) {
+            // Simple helper to format basic markdown markers returned by LLM
+            let formatted = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>')
+                // Format basic bullet lists: * item
+                .replace(/<br>\s*[\*\-]\s(.*?)/g, '<br>• $1');
+            return formatted;
+        }
+
+        function sendChatMessage(explicitText = null) {
+            const input = document.getElementById('chatInput');
+            const messageText = (explicitText || input.value).trim();
+            
+            if (!messageText) return;
+
+            // Clear input
+            if (!explicitText) {
+                input.value = '';
+            }
+
+            // Append user message
+            appendMessage('user', messageText);
+
+            // Add typing indicator
+            const messagesContainer = document.getElementById('chatMessages');
+            const indicatorDiv = document.createElement('div');
+            indicatorDiv.className = 'chat-message ai typing-indicator';
+            indicatorDiv.id = 'chatTypingIndicator';
+            indicatorDiv.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+            messagesContainer.appendChild(indicatorDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // Disable send
+            const sendBtn = document.getElementById('chatSendBtn');
+            sendBtn.disabled = true;
+
+            // Send request to Flask backend
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: messageText,
+                    history: chatHistory
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Remove typing indicator
+                const indicator = document.getElementById('chatTypingIndicator');
+                if (indicator) indicator.remove();
+
+                // Append AI message
+                appendMessage('ai', data.response);
+
+                // Update local chat history
+                chatHistory.push({ role: 'user', text: messageText });
+                chatHistory.push({ role: 'model', text: data.response });
+                
+                // Limit history to last 10 turns to avoid excessive payload
+                if (chatHistory.length > 20) {
+                    chatHistory = chatHistory.slice(-20);
+                }
+            })
+            .catch(err => {
+                const indicator = document.getElementById('chatTypingIndicator');
+                if (indicator) indicator.remove();
+                
+                appendMessage('ai', 'Sorry, I encountered an error. Please try again.');
+                console.error("Chat error:", err);
+            })
+            .finally(() => {
+                sendBtn.disabled = false;
+                input.focus();
+            });
+        }
+    </script>
+
+</body>
+</html>
+
